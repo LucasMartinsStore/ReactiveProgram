@@ -1,6 +1,7 @@
-import { VolumeInfo, Book } from './../../interface/interfaces';
+import { VolumeInfo, Book, Item } from './../../interface/interfaces';
 import { Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
 
 import { LivroService } from 'src/app/services/livro.service';
 
@@ -26,22 +27,10 @@ export class ListaLivrosComponent implements OnDestroy {
     });
   }
 
-  private BookListRender(items): Book[] {
-    const books: Book[] = [];
-    items.forEach((item) => {
-      books.push(
-        (this.book = {
-          title: item.volumeInfo?.title,
-          authors: item.volumeInfo?.authors,
-          publisher: item.volumeInfo?.publisher,
-          publishedDate: item.volumeInfo?.publishedDate,
-          description: item.volumeInfo?.description,
-          previewLink: item.volumeInfo?.previewLink,
-          thumbnail: item.volumeInfo?.imageLinks?.thumbnail,
-        })
-      );
+  private BookListRender(items: Item[]): BookVolumeInfo[] {
+    return items.map((item) => {
+      return new BookVolumeInfo(item);
     });
-    return books;
   }
 
   ngOnDestroy() {
