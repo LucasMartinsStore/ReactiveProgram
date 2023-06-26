@@ -1,6 +1,7 @@
+import { FormControl } from '@angular/forms';
 import { VolumeInfo, Book, Item } from './../../interface/interfaces';
 import { Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap, map, tap } from 'rxjs';
 import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
 
 import { LivroService } from 'src/app/services/livro.service';
@@ -10,30 +11,25 @@ import { LivroService } from 'src/app/services/livro.service';
   templateUrl: './lista-livros.component.html',
   styleUrls: ['./lista-livros.component.css'],
 })
-export class ListaLivrosComponent implements OnDestroy {
-  listaLivros: Book[];
-  fieldSearch: string = '';
-  subscription: Subscription;
-  book: Book;
+export class ListaLivrosComponent {
+  fieldSearch = new FormControl();
 
   constructor(private livroService: LivroService) {}
 
-  searchBook() {
-    this.subscription = this.livroService.search(this.fieldSearch).subscribe({
-      next: (items) => {
-        this.listaLivros = this.BookListRender(items);
-      },
-      error: (errorAPI) => console.error(errorAPI),
-    });
-  }
+  bookFounder$ = this.fieldSearch.valueChanges.pipe(
+    /* A ideia desse operador é troca os valores e passar ao servidor só o último valor (B) , desconsiderando os valores anteriores (A) */
+    tap(() => console.log('Fluxo inicial')),
+    switchMap((value) => this.livroService.search(value)),
+    tap(() => console.log('Requisições ao servidor')),
+    map((items) => {
+      console.log('Requisições ao servidor');
+      this.BookListRender(items);
+    })
+  );
 
   private BookListRender(items: Item[]): BookVolumeInfo[] {
     return items.map((item) => {
       return new BookVolumeInfo(item);
     });
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 }
