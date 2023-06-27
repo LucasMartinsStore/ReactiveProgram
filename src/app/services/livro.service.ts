@@ -14,6 +14,6 @@ export class LivroService {
 
   search(value: string): Observable<BookResult> {
     const params = new HttpParams().append('q', value);
-    return this.httpClient.get<BookResult>(this.API, { params })
+    return this.httpClient.get<BookResult>(this.API, { params });
   }
 }

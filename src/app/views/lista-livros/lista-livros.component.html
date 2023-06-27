@@ -7,6 +7,12 @@
     </button>
   </div>
   <p>Busque por assunto, autoria, nome...</p>
+  <div class="resultados mensagem-erro" *ngIf="messageError">
+    {{ messageError }}
+  </div>
+  <div class="resultados" *ngIf="totalBook$ | async">
+    {{ bookResult.totalItems }} resultados encontrados
+  </div>
   <div
     class="container-card"
     *ngIf="bookFounder$ | async as listBook; else telaInicial"

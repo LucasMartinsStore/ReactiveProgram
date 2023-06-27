@@ -6,6 +6,11 @@ import {
   filter,
   debounceTime,
   distinctUntilChanged,
+  catchError,
+  throwError,
+  EMPTY,
+  tap,
+  of,
 } from 'rxjs';
 
 import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
@@ -21,8 +26,21 @@ const PAUSE = 300;
 export class ListaLivrosComponent {
   fieldSearch = new FormControl();
   bookResult: BookResult;
+  messageError = '';
 
   constructor(private service: LivroService) {}
+
+  totalBook$ = this.fieldSearch.valueChanges.pipe(
+    debounceTime(PAUSE),
+    filter((valorDigitado) => valorDigitado.length >= 3),
+    tap(() => console.log('Fluxo inicial')),
+    switchMap((value) => this.service.search(value)),
+    map((result) => (this.bookResult = result)),
+    catchError((error) => {
+      console.log(error);
+      return of();
+    })
+  );
 
   bookFounder$ = this.fieldSearch.valueChanges.pipe(
     debounceTime(PAUSE),
@@ -31,7 +49,19 @@ export class ListaLivrosComponent {
     switchMap((value) => this.service.search(value)),
     map((result) => (this.bookResult = result)),
     map((result) => result.items ?? []),
-    map((items) => this.bookListRender(items))
+    map((items) => this.bookListRender(items)),
+    catchError((error) => {
+      // this.messageError = 'Ops, ocorreu um erro. Recarregue a aplicação!';
+      //return EMPTY;
+      console.log(error);
+      return throwError(
+        () =>
+          new Error(
+            (this.messageError =
+              'Ops, ocorreu um erro. Recarregue a aplicação!')
+          )
+      );
+    })
   );
 
   private bookListRender(items: Item[]): BookVolumeInfo[] {
