@@ -1,6 +1,12 @@
 import { FormControl } from '@angular/forms';
 import { Component } from '@angular/core';
-import { switchMap, map, filter, debounceTime } from 'rxjs';
+import {
+  switchMap,
+  map,
+  filter,
+  debounceTime,
+  distinctUntilChanged,
+} from 'rxjs';
 
 import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
 import { Item, BookResult } from './../../interface/interfaces';
@@ -21,6 +27,7 @@ export class ListaLivrosComponent {
   bookFounder$ = this.fieldSearch.valueChanges.pipe(
     debounceTime(PAUSE),
     filter((value) => value.length >= 3),
+    distinctUntilChanged(),
     switchMap((value) => this.service.search(value)),
     map((result) => (this.bookResult = result)),
     map((result) => result.items ?? []),
