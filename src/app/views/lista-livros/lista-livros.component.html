@@ -11,7 +11,7 @@
     class="container-card"
     *ngIf="bookFounder$ | async as listBook; else telaInicial"
   >
-    <div *ngFor="let livro of $any(listBook)">
+    <div *ngFor="let livro of listBook">
       <app-livro [livro]="livro"></app-livro>
     </div>
   </div>

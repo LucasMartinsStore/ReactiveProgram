@@ -1,11 +1,12 @@
 import { FormControl } from '@angular/forms';
-import { VolumeInfo, Book, Item } from './../../interface/interfaces';
-import { Component, OnDestroy } from '@angular/core';
-import { Subscription, switchMap, map, tap } from 'rxjs';
-import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
+import { Component } from '@angular/core';
+import { switchMap, map, filter, debounceTime } from 'rxjs';
 
+import { BookVolumeInfo } from 'src/app/interface/bookVolumeInfo';
+import { Item, BookResult } from './../../interface/interfaces';
 import { LivroService } from 'src/app/services/livro.service';
 
+const PAUSE = 300;
 @Component({
   selector: 'app-lista-livros',
   templateUrl: './lista-livros.component.html',
@@ -13,21 +14,20 @@ import { LivroService } from 'src/app/services/livro.service';
 })
 export class ListaLivrosComponent {
   fieldSearch = new FormControl();
+  bookResult: BookResult;
 
-  constructor(private livroService: LivroService) {}
+  constructor(private service: LivroService) {}
 
   bookFounder$ = this.fieldSearch.valueChanges.pipe(
-    /* A ideia desse operador é troca os valores e passar ao servidor só o último valor (B) , desconsiderando os valores anteriores (A) */
-    tap(() => console.log('Fluxo inicial')),
-    switchMap((value) => this.livroService.search(value)),
-    tap(() => console.log('Requisições ao servidor')),
-    map((items) => {
-      console.log('Requisições ao servidor');
-      this.BookListRender(items);
-    })
+    debounceTime(PAUSE),
+    filter((value) => value.length >= 3),
+    switchMap((value) => this.service.search(value)),
+    map((result) => (this.bookResult = result)),
+    map((result) => result.items ?? []),
+    map((items) => this.bookListRender(items))
   );
 
-  private BookListRender(items: Item[]): BookVolumeInfo[] {
+  private bookListRender(items: Item[]): BookVolumeInfo[] {
     return items.map((item) => {
       return new BookVolumeInfo(item);
     });
